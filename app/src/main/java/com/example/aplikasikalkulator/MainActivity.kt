@@ -38,6 +38,7 @@ fun CalculatorScreen() {
     var number2 by remember { mutableStateOf("") }
     var result by remember { mutableStateOf("") }
     var currentOperation by remember { mutableStateOf<String?>(null) }
+    var operationHistory by remember { mutableStateOf("") }
 
     fun appendNumber(value: String) {
         if (currentOperation == null) {
@@ -45,14 +46,16 @@ fun CalculatorScreen() {
             result = number1
         } else {
             number2 += value
-            result = number2
+            result = "$number1 $currentOperation $number2"
+            operationHistory = "$number1 $currentOperation $number2"
         }
     }
 
     fun appendOperation(op: String) {
         if (number1.isNotEmpty() && currentOperation == null) {
             currentOperation = op
-            result = op
+            result = "$number1 $op"
+            operationHistory = "$number1 $op"
         }
     }
 
@@ -60,6 +63,7 @@ fun CalculatorScreen() {
         if (number1.isNotEmpty() && number2.isNotEmpty() && currentOperation != null) {
             calculate(number1, number2, currentOperation!!) { res ->
                 result = res
+                operationHistory = "$number1 $currentOperation $number2 = $res"
                 number1 = res
                 number2 = ""
                 currentOperation = null
@@ -80,13 +84,28 @@ fun CalculatorScreen() {
                 .background(Color.Black.copy(alpha = 0.1f)),
             contentAlignment = Alignment.BottomEnd
         ) {
-            Text(
-                text = result.ifEmpty { "0" },
-                fontSize = 48.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White,
-                modifier = Modifier.padding(16.dp)
-            )
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.End
+            ) {
+                if (operationHistory.isNotEmpty()) {
+                    Text(
+                        text = operationHistory,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Normal,
+                        color = Color.White.copy(alpha = 0.7f),
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                }
+                Text(
+                    text = result.ifEmpty { "0" },
+                    fontSize = 48.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+            }
         }
 
         Column(
@@ -102,6 +121,7 @@ fun CalculatorScreen() {
                     number2 = ""
                     result = ""
                     currentOperation = null
+                    operationHistory = ""
                 })
                 CalculatorButton(text = "%", color = Color.Gray, onClick = { appendOperation("%") })
                 CalculatorButton(text = "/", color = Color(0xFFFF9800), onClick = { appendOperation("/") })
